@@ -1,0 +1,27 @@
+{
+  "name": "ascii-treasure-hunt",
+  "version": "1.0.0",
+  "description": "Using Node.JS to create a basic and experimental treasure hunt game",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kherin/ascii-treasure-hunt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kherin/ascii-treasure-hunt/issues"
+  },
+  "homepage": "https://github.com/kherin/ascii-treasure-hunt#readme",
+  "dependencies": {
+    "log-update": "^4.0.0",
+    "node-emoji": "^1.10.0",
+    "ora": "^4.0.4",
+    "readline-sync": "^1.4.10"
+  }
+}
