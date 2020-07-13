@@ -11,3 +11,9 @@
 ### Added obstacles and a collision mechanism
 
 ![](part_2.gif)
+
+## Part 3
+
+### Added timer, traps and new sprites
+
+![](part_3.gif)

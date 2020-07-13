@@ -11,6 +11,10 @@ let userPositionY = 0;
 const numTreasureChests = 10;
 const treasures = [];
 
+// traps
+const traps = [];
+const triggeredTraps = [];
+
 // obstacles
 const obstacles = [];
 
@@ -20,8 +24,39 @@ let showTreasureAlert = true;
 const treasureCounter = 0;
 const positionsTaken = [];
 
-function getRandomPosition() {
+// timer counter
+let timerCounter = 120; // time in seconds
+let timer;
+let startTimer = false;
 
+// game status
+let status = "running";
+
+// sprites
+let player;
+let stone;
+let treasure;
+let trap;
+let trap_triggered;
+
+function preload() {
+    player = loadImage('assets/player.png');
+    stone = loadImage('assets/stone.png');
+    treasure = loadImage('assets/treasure.png');
+    trap = loadImage('assets/trap.png');
+    trap_triggered = loadImage('assets/trap_triggered.png');
+}
+
+function updateTimer() {
+    if (timerCounter == 0 && status == 'running') {
+        clearInterval(timer);
+        alert("You lost");
+    } else {
+        document.querySelector('#timerCounter').innerHTML = `${--timerCounter} seconds`;
+    }
+}
+
+function getRandomPosition() {
     let randomX = 0;
     let randomY = 0;
 
@@ -39,7 +74,6 @@ function getRandomPosition() {
             positionsTaken.push([randomX, randomY])
             break;
         }
-
     }
 
     return [randomX, randomY];
@@ -59,6 +93,13 @@ function createObstacles() {
     }
 }
 
+function createTraps() {
+    let numTraps = Math.floor(Math.random() * 10);
+    for (let index = 0; index < numTraps; index++) {
+        traps.push(getRandomPosition());
+    }
+}
+
 function setup() {
     createCanvas(300, 300);
     let [randomX, randomY] = getRandomPosition();
@@ -68,11 +109,13 @@ function setup() {
     //treasures
     createTreasure();
 
-    //create obstacles
+    // obstacles
     createObstacles();
 
-    console.log('treasures: ', treasures);
-    console.log('obstacles: ', obstacles);
+    //traps
+    createTraps();
+
+    timer = setInterval(updateTimer, 1000);
 }
 
 function draw() {
@@ -84,21 +127,23 @@ function draw() {
 
             let height = y * 30;
             let width = x * 30;
+            rect(height, width, 30, 30);
             if (userPositionX == width && userPositionY == height) {
-                stroke(0);
-                fill(255, 204, 0);
+                image(player, userPositionY, userPositionX, 30, 30);
 
                 if (isTreasure(width, height)) {
                     removeTreasure(width, height);
                 }
             } else if (isTreasure(width, height)) {
-                stroke(0);
-                fill(243, 148, 40);
+                image(treasure, height, width, 30, 30);
             } else if (isObstacle(width, height)) {
-                stroke(0);
-                fill(60, 60, 60);
+                image(stone, height, width, 30, 30);
+            } else if (isTrap(width, height)) {
+                image(trap, height, width, 30, 30);
             }
-            rect(height, width, 30, 30);
+            if (isTriggeredTrap(width, height)) {
+                image(trap_triggered, height, width, 30, 30);
+            }
         }
     }
 }
@@ -107,6 +152,8 @@ function updateTreasureCounter() {
     document.querySelector('#treasureCounter').innerHTML = `Treasure Counter: ${numTreasureChests - treasures.length}`;
     if (treasures.length == 0 && showTreasureAlert) {
         showTreasureAlert = false;
+        status == 'won';
+        clearInterval(timer);
         alert("You've collected all the treasures!");
     }
 }
@@ -124,9 +171,23 @@ function isObstacle(x, y) {
     return isRelated(x, y, obstacles);
 }
 
+function isTrap(x, y) {
+    return isRelated(x, y, traps);
+}
+
+function isTriggeredTrap(x, y) {
+    return isRelated(x, y, triggeredTraps);
+}
+
+
 function removeTreasure(x, y) {
     const foundIndex = treasures.findIndex(coordinates => coordinates[0] == x && coordinates[1] == y);
     treasures.splice(foundIndex, 1);
+}
+
+function removeTrap(x, y) {
+    const foundIndex = traps.findIndex(coordinates => coordinates[0] == x && coordinates[1] == y);
+    traps.splice(foundIndex, 1);
 }
 
 function isWithinBoundary(value) {
@@ -158,5 +219,10 @@ function keyPressed() {
         if (isWithinBoundary(nextMove) && !hitObstacle(userPositionX, nextMove)) {
             userPositionY = nextMove;
         }
+    }
+
+    if (isTrap(userPositionX, userPositionY)) {
+        triggeredTraps.push([userPositionX, userPositionY]);
+        removeTrap(userPositionX, userPositionY);
     }
 }
