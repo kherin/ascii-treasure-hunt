@@ -17,3 +17,9 @@
 ### Added timer, traps and new sprites
 
 ![](part_3.gif)
+
+## Part 4
+
+### Added simple fog mechanism
+
+![](part_4.gif)

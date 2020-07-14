@@ -12,6 +12,7 @@ const numTreasureChests = 10;
 const treasures = [];
 
 // traps
+const trapThreshold = 3;
 const traps = [];
 const triggeredTraps = [];
 
@@ -38,6 +39,11 @@ let stone;
 let treasure;
 let trap;
 let trap_triggered;
+
+
+// fog-of-war
+let activateFog = true;
+let exceptions;
 
 function preload() {
     player = loadImage('assets/player.png');
@@ -94,7 +100,7 @@ function createObstacles() {
 }
 
 function createTraps() {
-    let numTraps = Math.floor(Math.random() * 10);
+    let numTraps = Math.floor(Math.random() * 5) + 3;
     for (let index = 0; index < numTraps; index++) {
         traps.push(getRandomPosition());
     }
@@ -119,30 +125,51 @@ function setup() {
 }
 
 function draw() {
-    updateTreasureCounter();
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < columns; x++) {
-            stroke(0);
-            fill(255);
+    exceptions = [
+        [userPositionY, userPositionX],
+        [userPositionY + 30, userPositionX],
+        [userPositionY + 60, userPositionX],
+        [userPositionY, userPositionX + 30],
+        [userPositionY, userPositionX + 60],
+        [userPositionY - 30, userPositionX],
+        [userPositionY - 60, userPositionX],
+        [userPositionY, userPositionX - 30],
+        [userPositionY, userPositionX - 60],
+    ].filter(([exceptionY, exceptionX]) => isWithinBoundary(exceptionY) && isWithinBoundary(exceptionX));
 
-            let height = y * 30;
-            let width = x * 30;
-            rect(height, width, 30, 30);
-            if (userPositionX == width && userPositionY == height) {
-                image(player, userPositionY, userPositionX, 30, 30);
+    if (status == 'running') {
+        updateTreasureCounter();
+        checkTriggeredTrap();
+        for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < columns; x++) {
+                stroke(0);
+                fill(255);
 
-                if (isTreasure(width, height)) {
-                    removeTreasure(width, height);
+                let height = y * 30;
+                let width = x * 30;
+                rect(height, width, 30, 30);
+
+                if (userPositionX == width && userPositionY == height) {
+                    image(player, userPositionY, userPositionX, 30, 30);
+
+                    if (isTreasure(width, height)) {
+                        removeTreasure(width, height);
+                    }
+                } else if (isTreasure(width, height)) {
+                    image(treasure, height, width, 30, 30);
+                } else if (isObstacle(width, height)) {
+                    image(stone, height, width, 30, 30);
+                } else if (isTrap(width, height)) {
+                    image(trap, height, width, 30, 30);
                 }
-            } else if (isTreasure(width, height)) {
-                image(treasure, height, width, 30, 30);
-            } else if (isObstacle(width, height)) {
-                image(stone, height, width, 30, 30);
-            } else if (isTrap(width, height)) {
-                image(trap, height, width, 30, 30);
-            }
-            if (isTriggeredTrap(width, height)) {
-                image(trap_triggered, height, width, 30, 30);
+                if (isTriggeredTrap(width, height)) {
+                    image(trap_triggered, height, width, 30, 30);
+                }
+
+                if (!isException(height, width)) {
+                    fill(51);
+                    rect(height, width, 30, 30);
+                }
             }
         }
     }
@@ -179,6 +206,16 @@ function isTriggeredTrap(x, y) {
     return isRelated(x, y, triggeredTraps);
 }
 
+function isException(x, y) {
+    return isRelated(x, y, exceptions);
+}
+
+function checkTriggeredTrap() {
+    if (trapThreshold == triggeredTraps.length) {
+        alert('You lose!');
+        status = 'lose';
+    }
+}
 
 function removeTreasure(x, y) {
     const foundIndex = treasures.findIndex(coordinates => coordinates[0] == x && coordinates[1] == y);
