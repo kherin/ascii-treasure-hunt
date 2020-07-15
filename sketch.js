@@ -62,6 +62,10 @@ function updateTimer() {
     }
 }
 
+function updateTriggeredTrapsCounter() {
+    document.querySelector('#triggeredTraps').textContent = `Traps triggered: ${triggeredTraps.length}`;
+}
+
 function getRandomPosition() {
     let randomX = 0;
     let randomY = 0;
@@ -140,6 +144,7 @@ function draw() {
     if (status == 'running') {
         updateTreasureCounter();
         checkTriggeredTrap();
+        updateTriggeredTrapsCounter();
         for (let y = 0; y < rows; y++) {
             for (let x = 0; x < columns; x++) {
                 stroke(0);
